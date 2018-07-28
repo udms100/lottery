@@ -1,0 +1,47 @@
+pragma solidity ^0.4.21;
+
+contract Lottery {
+     address public manager;
+     address[] public players;
+
+    constructor() public payable{
+         manager = msg.sender;
+     }
+    //  to enter the Lottery the players
+    //  has to send in some amount of ether
+    // **payable**
+     function enter() public payable {
+         require(msg.value > .01 ether);
+
+         players.push(msg.sender);
+     }
+
+    //  generating pesudo random number Lottery
+    //  or a winner: we need the- current block difficulty
+    //  current time
+    //  address pf playes to feed it to SHA3 Algorithm
+    // the random function has to public or private depending on your choice
+
+     function random() public view returns (uint) {
+       return uint(keccak256(block.difficulty, now, players));
+    }
+
+    //  pick Winner function and map it as public
+    // index means address 0x....
+
+    function pickWinner() public restricted {
+        uint index = random() % players.length;
+        players[index].transfer(this.balance);
+        players = new address[](0);
+    }
+    // function modifier
+     // only the manager can call the pickwinner f
+    modifier restricted(){
+        require(msg.sender == manager);
+        _;
+    }
+
+    function getPlayers() public view returns (address[]){
+        return players;
+    }
+}
